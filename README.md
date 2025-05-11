@@ -1,4 +1,4 @@
-# Image Uploader for Obsidian
+# Gyazo Image Uploader
 
 A plugin that seamlessly integrates Gyazo with Obsidian, allowing you to easily upload and share images, similar to Scrapbox's functionality.
 

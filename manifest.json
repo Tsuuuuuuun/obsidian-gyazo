@@ -1,6 +1,6 @@
 {
 	"id": "obsidian-gyazo",
-	"name": "Image Uploader for Obsidian",
+	"name": "Gyazo Image Uploader",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Seamlessly integrate Gyazo with Obsidian for easy image uploads and sharing, similar to Scrapbox's functionality",
