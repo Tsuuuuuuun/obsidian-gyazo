@@ -1,94 +1,87 @@
-# Obsidian Sample Plugin
+# Obsidian Gyazo
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+A plugin that seamlessly integrates Gyazo with Obsidian, allowing you to easily upload and share images, similar to Scrapbox's functionality.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Features
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+- Upload images directly from your clipboard to Gyazo
+- Automatically insert Markdown image links into your notes
+- Simple and intuitive interface with ribbon icon and command palette support
+- Secure API token management through settings
 
-## First time developing plugins?
+## Installation
 
-Quick starting guide for new plugin devs:
+1. Open Obsidian Settings
+2. Go to Community Plugins and turn off Safe Mode
+3. Click Browse and search for "Obsidian Gyazo"
+4. Click Install
+5. Enable the plugin
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Setup
 
-## Releasing new releases
+1. Get your Gyazo API access token:
+   - Log in to your Gyazo account
+   - Go to [Gyazo Developer Settings](https://gyazo.com/oauth/applications)
+   - Create a new application or use an existing one
+   - Copy your access token
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+2. Configure the plugin:
+   - Open Obsidian Settings
+   - Go to Community Plugins > Obsidian Gyazo
+   - Paste your Gyazo access token in the settings
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## Usage
 
-## Adding your plugin to the community plugin list
+### Upload from Clipboard
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+1. Copy an image to your clipboard
+2. Use one of these methods to upload:
+   - Click the image icon in the left ribbon
+   - Use the command palette (Ctrl/Cmd + P) and search for "Upload to Gyazo"
+3. The plugin will automatically insert a Markdown image link at your cursor position
 
-## How to use
+![demo](demo.gif)
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+### Image Link Format
 
-## Manually installing the plugin
+The plugin inserts images in the following format:
+```markdown
+![image_id](https://i.gyazo.com/image_id.png)
+```
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+## API Reference
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+The plugin uses the Gyazo API for image uploads. Here's the API endpoint specification:
 
-## Funding URL
+```bash
+$ curl -i https://upload.gyazo.com/api/upload -F "access_token=YOUR_ACCESS_TOKEN" \
+  -F "imagedata=@/path/to/image.png"
 
-You can include funding URLs where people who use your plugin can financially support it.
+HTTP/1.1 200 OK
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
 {
-    "fundingUrl": "https://buymeacoffee.com"
+    "image_id" : "8980c52421e452ac3355ca3e5cfe7a0c",
+    "permalink_url": "http://gyazo.com/8980c52421e452ac3355ca3e5cfe7a0c",
+    "thumb_url" : "https://i.gyazo.com/thumb/180/afaiefnaf.png",
+    "url" : "https://i.gyazo.com/8980c52421e452ac3355ca3e5cfe7a0c.png",
+    "type": "png"
 }
 ```
 
-If you have multiple URLs, you can also do:
+## Error Handling
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+The plugin provides clear feedback for common issues:
+- Missing API token
+- No image in clipboard
+- Upload failures
+- Network errors
 
-## API Documentation
+## Support
 
-See https://github.com/obsidianmd/obsidian-api
+If you encounter any issues or have suggestions for improvements, please:
+1. Check the [GitHub Issues](https://github.com/tsumac/obsidian-gyazo/issues)
+2. Create a new issue if your problem hasn't been reported
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

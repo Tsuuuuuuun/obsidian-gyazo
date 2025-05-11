@@ -1,85 +1,38 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+interface GyazoPluginSettings {
+	accessToken: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: GyazoPluginSettings = {
+	accessToken: ''
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class GyazoPlugin extends Plugin {
+	settings: GyazoPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+		// リボンアイコンを追加
+		this.addRibbonIcon('image', 'Upload to Gyazo', async () => {
+			await this.uploadToGyazo();
 		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
-
-		// This adds a simple command that can be triggered anywhere
+		// コマンドを追加
 		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
+			id: 'upload-to-gyazo',
+			name: 'Upload to Gyazo',
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				await this.uploadToGyazo();
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		// 設定タブを追加
+		this.addSettingTab(new GyazoSettingTab(this.app, this));
 	}
 
 	onunload() {
-
 	}
 
 	async loadSettings() {
@@ -89,45 +42,72 @@ export default class MyPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+
+	async uploadToGyazo() {
+		if (!this.settings.accessToken) {
+			new Notice('Please set your Gyazo access token in the settings.');
+			return;
+		}
+
+		try {
+			// クリップボードから画像を取得
+			const clipboardItems = await navigator.clipboard.read();
+			const imageItem = clipboardItems.find(item => item.types.includes('image/png') || item.types.includes('image/jpeg'));
+			
+			if (!imageItem) {
+				new Notice('No image found in clipboard.');
+				return;
+			}
+
+			const imageBlob = await imageItem.getType('image/png');
+			const formData = new FormData();
+			formData.append('access_token', this.settings.accessToken);
+			formData.append('imagedata', imageBlob);
+
+			const response = await fetch('https://upload.gyazo.com/api/upload', {
+				method: 'POST',
+				body: formData
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to upload image');
+			}
+
+			const data = await response.json();
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			
+			if (activeView) {
+				const editor = activeView.editor;
+				const markdown = `![${data.image_id}](${data.url})`;
+				editor.replaceSelection(markdown);
+				new Notice('Image uploaded successfully!');
+			}
+		} catch (error) {
+			new Notice('Failed to upload image: ' + error.message);
+		}
+	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
+class GyazoSettingTab extends PluginSettingTab {
+	plugin: GyazoPlugin;
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: GyazoPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
 	display(): void {
 		const {containerEl} = this;
-
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Gyazo Access Token')
+			.setDesc('Enter your Gyazo access token')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Enter your access token')
+				.setValue(this.plugin.settings.accessToken)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.accessToken = value;
 					await this.plugin.saveSettings();
 				}));
 	}
