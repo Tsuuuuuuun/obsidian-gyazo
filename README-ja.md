@@ -1,4 +1,4 @@
-# Obsidian Gyazo
+# Image Uploader for Obsidian
 
 Scrapboxのような使い勝手で、ObsidianとGyazoをシームレスに連携し、画像のアップロードと共有を簡単に行えるプラグインです。
 
@@ -84,4 +84,4 @@ HTTP/1.1 200 OK
 
 ## ライセンス
 
-このプロジェクトはMITライセンスの下で公開されています - 詳細は[LICENSE](LICENSE)ファイルを参照してください。 
+このプロジェクトは0BSDライセンスの下で公開されています - 詳細は[LICENSE](LICENSE)ファイルを参照してください。 
