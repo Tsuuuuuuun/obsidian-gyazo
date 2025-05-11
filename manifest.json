@@ -3,8 +3,8 @@
 	"name": "Gyazo Image Uploader",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Seamlessly integrate Gyazo for easy image uploads and sharing, similar to Scrapbox's functionality.",
+	"description": "Seamlessly integrate Gyazo for easy image uploads and sharing, similar to Scrapbox's functionality",
 	"author": "tsuuuuuuun",
-	"authorUrl": "https://github.com/Tsuuuuuuun",
+	"authorUrl": "https://github.com/tsuuuuuuun",
 	"isDesktopOnly": false
 }
