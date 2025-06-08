@@ -124,7 +124,7 @@ class GyazoSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Gyazo Access Token')
+			.setName('Gyazo access token')
 			.setDesc('Enter your Gyazo access token')
 			.addText(text => text
 				.setPlaceholder('Enter your access token')
